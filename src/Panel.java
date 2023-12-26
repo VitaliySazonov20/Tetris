@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class Panel extends JPanel implements KeyListener {
@@ -53,7 +54,7 @@ public class Panel extends JPanel implements KeyListener {
     private void drawBlocks(Graphics graphics) {
         for (int i = 0; i < gameInfo.length; i++) {
             for (int j = 0; j < gameInfo[i].length; j++) {
-                if (gameInfo[i][j]||ghostGameInfo[i][j]) {
+                if (gameInfo[i][j] || ghostGameInfo[i][j]) {
                     graphics.fillRect((int) (j * cellSize + 5), (int) (i * cellSize + 5), (int) (cellSize - 10), (int) (cellSize - 10));
                 }
             }
@@ -62,7 +63,7 @@ public class Panel extends JPanel implements KeyListener {
 
     private void spawnPiece() {
         TetrisPiece piece = new TetrisPiece(typesOfPieces[random.nextInt(typesOfPieces.length)]);
-        int k= checkEmptyRows(piece.tetrisPieceSpace);
+        int k = checkEmptyRows(piece.tetrisPieceSpace);
         for (int i = 0; i + k < piece.tetrisPieceSpace.length; i++) {
             for (int j = 0; j < piece.tetrisPieceSpace.length; j++) {
                 ghostGameInfo[i][j + 3] = piece.tetrisPieceSpace[i + k][j];
@@ -83,37 +84,75 @@ public class Panel extends JPanel implements KeyListener {
         }
         return k;
     }
+
     @Override
     public void keyTyped(KeyEvent e) {
 
     }
+
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         // Handle key press events
         if (keyCode == KeyEvent.VK_LEFT) {
-            for (int i = 0; i < ghostGameInfo.length; i++) {
-                for (int j = 0; j < ghostGameInfo[i].length-1; j++) {
-                    ghostGameInfo[i][j]=ghostGameInfo[i][j+1];
+            if (checkEmptyColumn(0)) {
+                for (int i = 0; i < ghostGameInfo.length; i++) {
+                    for (int j = 0; j < ghostGameInfo[i].length - 1; j++) {
+                        ghostGameInfo[i][j] = ghostGameInfo[i][j + 1];
+                    }
+                    ghostGameInfo[i][ghostGameInfo[i].length - 1] = false;
                 }
-                ghostGameInfo[i][ghostGameInfo[i].length-1]=false;
             }
             repaint();
 
         } else if (keyCode == KeyEvent.VK_RIGHT) {
-            for (int i = ghostGameInfo.length-1; i >=0; i--) {
-                for (int j = ghostGameInfo[i].length-1; j >1; j--) {
-                    ghostGameInfo[i][j]=ghostGameInfo[i][j-1];
+            if (checkEmptyColumn(ghostGameInfo[0].length - 1)) {
+                for (int i = ghostGameInfo.length - 1; i >= 0; i--) {
+                    for (int j = ghostGameInfo[i].length - 1; j >= 1; j--) {
+                        ghostGameInfo[i][j] = ghostGameInfo[i][j - 1];
+                    }
+                    ghostGameInfo[i][0] = false;
                 }
-                ghostGameInfo[i][0]=false;
             }
             repaint();
         } else if (keyCode == KeyEvent.VK_DOWN) {
+            for (int i = ghostGameInfo.length - 1; i >= 1; i--) {
+                for (int j = 0; j <ghostGameInfo[i].length; j++) {
+                    ghostGameInfo[i][j] = ghostGameInfo[i-1][j];
+                }
+
+            }
+            Arrays.fill(ghostGameInfo[0], false);
+            repaint();
             // Move the current piece down
         } else if (keyCode == KeyEvent.VK_UP) {
-            // Rotate the current piece
+            for (int i = 0; i < ghostGameInfo.length; i++) {
+                for (int j = i + 1; j < ghostGameInfo[i].length; j++) {
+                    boolean holder = ghostGameInfo[i][j];
+                    ghostGameInfo[i][j] = ghostGameInfo[j][i];
+                    ghostGameInfo[j][i] = holder;
+                }
+            }
+            for (int i = 0; i < ghostGameInfo.length; i++) {
+                for (int j = 0; j < ghostGameInfo[i].length / 2; j++) {
+                    boolean holder = ghostGameInfo[i][j];
+                    ghostGameInfo[i][j] = ghostGameInfo[i][ghostGameInfo[i].length - j - 1];
+                    ghostGameInfo[i][ghostGameInfo[i].length - j - 1] = holder;
+                }
+            }
+            repaint();
         }
     }
+
+    private boolean checkEmptyColumn(int column) {
+        for (int i = 0; i < ghostGameInfo.length; i++) {
+            if (ghostGameInfo[i][column]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public void keyReleased(KeyEvent e) {
 
