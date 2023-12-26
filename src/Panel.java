@@ -116,13 +116,27 @@ public class Panel extends JPanel implements KeyListener {
             }
             repaint();
         } else if (keyCode == KeyEvent.VK_DOWN) {
-            for (int i = ghostGameInfo.length - 1; i >= 1; i--) {
-                for (int j = 0; j <ghostGameInfo[i].length; j++) {
-                    ghostGameInfo[i][j] = ghostGameInfo[i-1][j];
-                }
+            if (checkEmptyRow(ghostGameInfo.length - 1)) {
+                for (int i = ghostGameInfo.length - 1; i >= 1; i--) {
+                    for (int j = 0; j < ghostGameInfo[i].length; j++) {
+                        ghostGameInfo[i][j] = ghostGameInfo[i - 1][j];
+                    }
 
+                }
+                Arrays.fill(ghostGameInfo[0], false);
+            } else {
+                for (int i =0; i <gameInfo.length; i++) {
+                    for (int j = 0; j < gameInfo[i].length; j++) {
+                        if(ghostGameInfo[i][j]){
+                            gameInfo[i][j]=ghostGameInfo[i][j];
+                        }
+                    }
+                }
+                for (int i =0; i <ghostGameInfo.length; i++){
+                    Arrays.fill(ghostGameInfo[i],false);
+                }
+                    spawnPiece();
             }
-            Arrays.fill(ghostGameInfo[0], false);
             repaint();
             // Move the current piece down
         } else if (keyCode == KeyEvent.VK_UP) {
@@ -147,6 +161,15 @@ public class Panel extends JPanel implements KeyListener {
     private boolean checkEmptyColumn(int column) {
         for (int i = 0; i < ghostGameInfo.length; i++) {
             if (ghostGameInfo[i][column]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkEmptyRow(int row) {
+        for (int i = 0; i < ghostGameInfo[row].length; i++) {
+            if (ghostGameInfo[row][i]) {
                 return false;
             }
         }
