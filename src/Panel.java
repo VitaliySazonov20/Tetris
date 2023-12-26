@@ -9,6 +9,7 @@ public class Panel extends JPanel {
     int WIDTH;
     int HEIGHT;
     boolean[][] gameInfo;
+    boolean[][] ghostGameInfo;
     Random random = new Random();
     String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock"};
 
@@ -16,6 +17,7 @@ public class Panel extends JPanel {
         this.WIDTH = width;
         this.HEIGHT = height;
         this.gameInfo = new boolean[(int) (height / cellSize)][(int) (width / cellSize)];
+        this.ghostGameInfo = new boolean[(int) (height / cellSize)][(int) (width / cellSize)];
         spawnPiece();
     }
 
@@ -46,7 +48,7 @@ public class Panel extends JPanel {
     private void drawBlocks(Graphics graphics) {
         for (int i = 0; i < gameInfo.length; i++) {
             for (int j = 0; j < gameInfo[i].length; j++) {
-                if (gameInfo[i][j]) {
+                if (gameInfo[i][j]||ghostGameInfo[i][j]) {
                     graphics.fillRect((int) (j * cellSize + 5), (int) (i * cellSize + 5), (int) (cellSize - 10), (int) (cellSize - 10));
                 }
             }
@@ -58,7 +60,7 @@ public class Panel extends JPanel {
         int k= checkEmptyRows(piece.tetrisPieceSpace);
         for (int i = 0; i + k < piece.tetrisPieceSpace.length; i++) {
             for (int j = 0; j < piece.tetrisPieceSpace.length; j++) {
-                gameInfo[i][j + 3] = piece.tetrisPieceSpace[i + k][j];
+                ghostGameInfo[i][j + 3] = piece.tetrisPieceSpace[i + k][j];
             }
         }
 
@@ -76,8 +78,5 @@ public class Panel extends JPanel {
         }
         return k;
     }
-
-    public boolean[][] getGameInfo() {
-        return gameInfo;
-    }
+    
 }

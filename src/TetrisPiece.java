@@ -50,7 +50,6 @@ public class TetrisPiece {
                 boolean holder=tetrisPieceSpace[i][j];
                 tetrisPieceSpace[i][j]=tetrisPieceSpace[j][i];
                 tetrisPieceSpace[j][i]=holder;
-
             }
         }
         for(int i=0;i<tetrisPieceSpace.length;i++){
