@@ -17,5 +17,6 @@ public class GameWindow {
         gameScreen.setBounds(25,25,WIDTH-75,HEIGHT-107);
         gameScreen.setBackground(Color.lightGray);
         window.add(gameScreen);
+        gameScreen.requestFocusInWindow();
     }
 }

@@ -1,10 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 import java.util.Random;
 
-public class Panel extends JPanel {
+public class Panel extends JPanel implements KeyListener {
     double cellSize = 42.5;
     int WIDTH;
     int HEIGHT;
@@ -19,6 +20,10 @@ public class Panel extends JPanel {
         this.gameInfo = new boolean[(int) (height / cellSize)][(int) (width / cellSize)];
         this.ghostGameInfo = new boolean[(int) (height / cellSize)][(int) (width / cellSize)];
         spawnPiece();
+
+        setFocusable(true);
+        requestFocusInWindow();
+        addKeyListener(this);
     }
 
 
@@ -78,5 +83,39 @@ public class Panel extends JPanel {
         }
         return k;
     }
-    
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        // Handle key press events
+        if (keyCode == KeyEvent.VK_LEFT) {
+            for (int i = 0; i < ghostGameInfo.length; i++) {
+                for (int j = 0; j < ghostGameInfo[i].length-1; j++) {
+                    ghostGameInfo[i][j]=ghostGameInfo[i][j+1];
+                }
+                ghostGameInfo[i][ghostGameInfo[i].length-1]=false;
+            }
+            repaint();
+
+        } else if (keyCode == KeyEvent.VK_RIGHT) {
+            for (int i = ghostGameInfo.length-1; i >=0; i--) {
+                for (int j = ghostGameInfo[i].length-1; j >1; j--) {
+                    ghostGameInfo[i][j]=ghostGameInfo[i][j-1];
+                }
+                ghostGameInfo[i][0]=false;
+            }
+            repaint();
+        } else if (keyCode == KeyEvent.VK_DOWN) {
+            // Move the current piece down
+        } else if (keyCode == KeyEvent.VK_UP) {
+            // Rotate the current piece
+        }
+    }
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
 }
