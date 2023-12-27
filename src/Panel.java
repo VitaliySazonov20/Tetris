@@ -13,7 +13,7 @@ public class Panel extends JPanel implements KeyListener {
     boolean[][] gameInfo;
     boolean[][] ghostGameInfo;
     Random random = new Random();
-    String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock"};
+    String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock","Lblock","RLblock"};
 
     Panel(int width, int height) {
         this.WIDTH = width;
@@ -116,7 +116,7 @@ public class Panel extends JPanel implements KeyListener {
             }
             repaint();
         } else if (keyCode == KeyEvent.VK_DOWN) {
-            if (checkEmptyRow(ghostGameInfo.length - 1)) {
+            if (checkEmptyRow(ghostGameInfo.length - 1)&&checkDownMovement()) {
                 for (int i = ghostGameInfo.length - 1; i >= 1; i--) {
                     for (int j = 0; j < ghostGameInfo[i].length; j++) {
                         ghostGameInfo[i][j] = ghostGameInfo[i - 1][j];
@@ -125,17 +125,17 @@ public class Panel extends JPanel implements KeyListener {
                 }
                 Arrays.fill(ghostGameInfo[0], false);
             } else {
-                for (int i =0; i <gameInfo.length; i++) {
+                for (int i = 0; i < gameInfo.length; i++) {
                     for (int j = 0; j < gameInfo[i].length; j++) {
-                        if(ghostGameInfo[i][j]){
-                            gameInfo[i][j]=ghostGameInfo[i][j];
+                        if (ghostGameInfo[i][j]) {
+                            gameInfo[i][j] = ghostGameInfo[i][j];
                         }
                     }
                 }
-                for (int i =0; i <ghostGameInfo.length; i++){
-                    Arrays.fill(ghostGameInfo[i],false);
+                for (int i = 0; i < ghostGameInfo.length; i++) {
+                    Arrays.fill(ghostGameInfo[i], false);
                 }
-                    spawnPiece();
+                spawnPiece();
             }
             repaint();
             // Move the current piece down
@@ -156,6 +156,21 @@ public class Panel extends JPanel implements KeyListener {
             }
             repaint();
         }
+    }
+
+    private boolean checkDownMovement() {
+        for (int i = 0; i < ghostGameInfo.length; i++) {
+            for (int j = 0; j < ghostGameInfo[i].length; j++) {
+                if(ghostGameInfo[i][j]){
+                    if(i+1<ghostGameInfo.length-1) {
+                        if (gameInfo[i + 1][j]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private boolean checkEmptyColumn(int column) {

@@ -39,6 +39,21 @@ public class TetrisPiece {
                 tetrisPieceSpace[2][2]=true;
                 break;
             }
+            case("Lblock"):{
+                for (int i=1;i< tetrisPieceSpace.length;i++){
+                    tetrisPieceSpace[i][1]=true;
+                }
+                tetrisPieceSpace[1][2]=true;
+                break;
+            }
+            case("RLblock"):{
+                for (int i=1;i< tetrisPieceSpace.length;i++){
+                    tetrisPieceSpace[i][1]=true;
+                }
+                tetrisPieceSpace[1][0]=true;
+            }
+
+
         }
         for(int i=0;i< random.nextInt(4);i++){
             rotate();
