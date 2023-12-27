@@ -13,7 +13,7 @@ public class Panel extends JPanel implements KeyListener {
     boolean[][] gameInfo;
     boolean[][] ghostGameInfo;
     Random random = new Random();
-    String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock","Lblock","RLblock"};
+    String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock", "Lblock", "RLblock"};
 
     Panel(int width, int height) {
         this.WIDTH = width;
@@ -116,7 +116,7 @@ public class Panel extends JPanel implements KeyListener {
             }
             repaint();
         } else if (keyCode == KeyEvent.VK_DOWN) {
-            if (checkEmptyRow(ghostGameInfo.length - 1)&&checkDownMovement()) {
+            if (checkEmptyRow(ghostGameInfo.length - 1) && checkDownMovement()) {
                 for (int i = ghostGameInfo.length - 1; i >= 1; i--) {
                     for (int j = 0; j < ghostGameInfo[i].length; j++) {
                         ghostGameInfo[i][j] = ghostGameInfo[i - 1][j];
@@ -140,29 +140,60 @@ public class Panel extends JPanel implements KeyListener {
             repaint();
             // Move the current piece down
         } else if (keyCode == KeyEvent.VK_UP) {
-            for (int i = 0; i < ghostGameInfo.length; i++) {
-                for (int j = i + 1; j < ghostGameInfo[i].length; j++) {
-                    boolean holder = ghostGameInfo[i][j];
-                    ghostGameInfo[i][j] = ghostGameInfo[j][i];
-                    ghostGameInfo[j][i] = holder;
+            int indexI = 0;
+            int indexJ = 0;
+            outerLoop:
+            for (int i = 0; i < ghostGameInfo.length - 4; i++) {
+                for (int j = 0; j < ghostGameInfo[i].length - 4; j++) {
+                    if (searchPiece(i, j)) {
+                        indexI = i;
+                        indexJ = j;
+                    }
                 }
             }
-            for (int i = 0; i < ghostGameInfo.length; i++) {
-                for (int j = 0; j < ghostGameInfo[i].length / 2; j++) {
-                    boolean holder = ghostGameInfo[i][j];
-                    ghostGameInfo[i][j] = ghostGameInfo[i][ghostGameInfo[i].length - j - 1];
-                    ghostGameInfo[i][ghostGameInfo[i].length - j - 1] = holder;
-                }
-            }
+            rotateMatrix(indexI, indexJ);
             repaint();
         }
+    }
+
+    private boolean searchPiece(int y, int x) {
+        int count = 0;
+        for (int i = y; i < y + 4; i++) {
+            for (int j = x; j < x + 4; j++) {
+                if (ghostGameInfo[i][j])
+                    count++;
+            }
+        }
+        return count == 4;
+    }
+
+    public void rotateMatrix(int y, int x) {
+        boolean[][] temp = new boolean[4][4];
+        for (int i = 0; i < temp.length; i++) {
+            for (int j = 0; j < temp[i].length; j++) {
+                temp[i][j] = ghostGameInfo[y + i][x + j];
+            }
+        }
+        for (int i = 0; i < temp.length; i++) {
+            for (int j = temp[i].length - 1; j > 0; j--) {
+                temp[i][j] = temp[i][j - 1];
+            }
+            temp[i][0] = false;
+        }
+        for (int i = temp.length - 1; i > 0; i--) {
+            for (int j = 0; j < temp[i].length; j++) {
+                temp[i][j] = temp[i - 1][j];
+            }
+        }
+        Arrays.fill(temp[0], false);
+
     }
 
     private boolean checkDownMovement() {
         for (int i = 0; i < ghostGameInfo.length; i++) {
             for (int j = 0; j < ghostGameInfo[i].length; j++) {
-                if(ghostGameInfo[i][j]){
-                    if(i+1<ghostGameInfo.length-1) {
+                if (ghostGameInfo[i][j]) {
+                    if (i + 1 < ghostGameInfo.length - 1) {
                         if (gameInfo[i + 1][j]) {
                             return false;
                         }
@@ -172,7 +203,6 @@ public class Panel extends JPanel implements KeyListener {
         }
         return true;
     }
-
     private boolean checkEmptyColumn(int column) {
         for (int i = 0; i < ghostGameInfo.length; i++) {
             if (ghostGameInfo[i][column]) {
