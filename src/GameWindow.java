@@ -4,7 +4,8 @@ import java.awt.*;
 public class GameWindow {
     JFrame window;
     JPanel gameScreen;
-    int WIDTH=500;
+    JLabel score;
+    int WIDTH=600;
     int HEIGHT= 1000;
     GameWindow(){
         window= new JFrame();
@@ -13,10 +14,18 @@ public class GameWindow {
         window.setLayout(null);
         window.setVisible(true);
 
-        gameScreen= new Panel(WIDTH-75,HEIGHT-107);
-        gameScreen.setBounds(25,25,WIDTH-75,HEIGHT-107);
+        score=new JLabel();
+        score.setBounds(WIDTH-105,25,100,100);
+        score.setFont(new Font("Arial", Font.BOLD, 20));
+        score.setText("00000");
+        window.add(score);
+
+
+        gameScreen= new Panel(WIDTH-175,HEIGHT-107,score);
+        gameScreen.setBounds(25,25,WIDTH-175,HEIGHT-107);
         gameScreen.setBackground(Color.lightGray);
         window.add(gameScreen);
         gameScreen.requestFocusInWindow();
+        window.revalidate();
     }
 }
