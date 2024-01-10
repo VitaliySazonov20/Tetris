@@ -8,13 +8,6 @@ public class MoveDownController extends Thread{
         this.panel=panel;
         timeStart=System.currentTimeMillis();
         this.start();
-        /*while (true){
-            currentTime=System.currentTimeMillis();
-            if(currentTime-timeStart>1000){
-                panel.moveDown();
-                timeStart=currentTime;
-            }
-        }*/
     }
     public void run(){
         while (true){

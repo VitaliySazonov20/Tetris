@@ -14,22 +14,20 @@ public class Panel extends JPanel implements KeyListener {
     boolean[][] gameInfo;
     boolean[][] ghostGameInfo;
     Random random = new Random();
-    JLabel score;
-    MoveDownController moveDownController;
+    int count=0;
+
     ArrayList<Integer> fullRows;
     String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock", "Lblock", "RLblock"};
 
-    Panel(int width, int height,JLabel score) {
+    Panel(int width, int height) {
         this.WIDTH = width;
         this.HEIGHT = height;
         this.gameInfo = new boolean[(int) (height / cellSize)][(int) (width / cellSize)];
         this.ghostGameInfo = new boolean[(int) (height / cellSize)][(int) (width / cellSize)];
-        this.score=score;
         spawnPiece();
         setFocusable(true);
         requestFocusInWindow();
         addKeyListener(this);
-        moveDownController = new MoveDownController(this);
     }
 
     @Override
@@ -100,6 +98,7 @@ public class Panel extends JPanel implements KeyListener {
                 }
             }
         }
+        
     }
     private void rotateMatrix() {
         int indexI = ghostGameInfo.length;
@@ -298,11 +297,8 @@ public class Panel extends JPanel implements KeyListener {
     }
 
     private void clearFullRows(ArrayList<Integer> fullRows) {
-        for (int i = 0; i < fullRows.size(); i++) {
-            for (int j = 0; j < gameInfo[i].length; j++) {
-                gameInfo[fullRows.get(i)][j] = false;
-
-            }
+        for (Integer fullRow : fullRows) {
+            Arrays.fill(gameInfo[fullRow], false);
         }
         if (!fullRows.isEmpty()) {
             try {
@@ -318,6 +314,7 @@ public class Panel extends JPanel implements KeyListener {
             for (int i = k; i > 0; i--) {
                 gameInfo[i] = gameInfo[i - 1];
             }
+            Arrays.fill(gameInfo[0],false);
         }
         if (!fullRows.isEmpty()) {
             try {
@@ -329,7 +326,6 @@ public class Panel extends JPanel implements KeyListener {
                 Thread.currentThread().interrupt();
             }
         }
-        score.setText(String.valueOf(Integer.parseInt(score.getText())+(int)(100*fullRows.size()*Math.pow(2,fullRows.size()-1))));
 
     }
 
@@ -342,10 +338,11 @@ public class Panel extends JPanel implements KeyListener {
                 }
             }
             Arrays.fill(ghostGameInfo[0], false);
-            /*for(int i=0;i<gh)*/
 
         } else {
+            count++;
             for (int i = 0; i < gameInfo.length; i++) {
+                //possible find of duplicate bug
                 for (int j = 0; j < gameInfo[i].length; j++) {
                     if (ghostGameInfo[i][j]) {
                         gameInfo[i][j] = ghostGameInfo[i][j];
@@ -354,15 +351,13 @@ public class Panel extends JPanel implements KeyListener {
 
             }
             for (int i = 0; i < ghostGameInfo.length; i++) {
-                //System.out.println(Arrays.toString(ghostGameInfo[i]));
                 Arrays.fill(ghostGameInfo[i], false);
             }
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             //duplicate bug happens in one of these 3 methods.
             fullRows = checkFullRows();
             clearFullRows(fullRows);
-
             spawnPiece();
+            System.out.println(count);
         }
         repaint();
 

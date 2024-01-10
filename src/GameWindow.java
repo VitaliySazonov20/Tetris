@@ -4,7 +4,7 @@ import java.awt.*;
 public class GameWindow {
     JFrame window;
     JPanel gameScreen;
-    JLabel score;
+    MoveDownController moveDownController;
     int WIDTH=600;
     int HEIGHT= 1000;
     GameWindow(){
@@ -14,18 +14,17 @@ public class GameWindow {
         window.setLayout(null);
         window.setVisible(true);
 
-        score=new JLabel();
-        score.setBounds(WIDTH-105,25,100,100);
-        score.setFont(new Font("Arial", Font.BOLD, 20));
-        score.setText("00000");
-        window.add(score);
 
 
-        gameScreen= new Panel(WIDTH-175,HEIGHT-107,score);
+
+
+        gameScreen= new Panel(WIDTH-175,HEIGHT-107);
         gameScreen.setBounds(25,25,WIDTH-175,HEIGHT-107);
         gameScreen.setBackground(Color.lightGray);
         window.add(gameScreen);
         gameScreen.requestFocusInWindow();
         window.revalidate();
+
+        moveDownController = new MoveDownController((Panel) gameScreen);
     }
 }
