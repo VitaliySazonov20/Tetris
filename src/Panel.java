@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+
 public class Panel extends JPanel implements KeyListener {
     double cellSize = 42.5;
     int WIDTH;
@@ -15,6 +16,7 @@ public class Panel extends JPanel implements KeyListener {
     boolean[][] ghostGameInfo;
     Random random = new Random();
     int count=0;
+    TetrisPiece piece;
 
     ArrayList<Integer> fullRows;
     String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock", "Lblock", "RLblock"};
@@ -80,9 +82,12 @@ public class Panel extends JPanel implements KeyListener {
     }
 
     private void spawnPiece() {
-
-        TetrisPiece piece = new TetrisPiece(typesOfPieces[random.nextInt(typesOfPieces.length)]);
-
+        if(piece!=null){
+            piece.generate(typesOfPieces[random.nextInt(typesOfPieces.length)]);
+        }
+        else {
+            piece = new TetrisPiece(typesOfPieces[random.nextInt(typesOfPieces.length)]);
+        }
         int k = checkEmptyRows(piece.tetrisPieceSpace);
         boolean canSpawn = true;
         for (int i = 0; i + k < piece.tetrisPieceSpace.length; i++) {
@@ -98,7 +103,7 @@ public class Panel extends JPanel implements KeyListener {
                 }
             }
         }
-        
+
     }
     private void rotateMatrix() {
         int indexI = ghostGameInfo.length;
@@ -360,6 +365,7 @@ public class Panel extends JPanel implements KeyListener {
             System.out.println(count);
         }
         repaint();
+
 
     }
 

@@ -1,9 +1,16 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public class TetrisPiece {
     boolean[][] tetrisPieceSpace= new boolean[4][4];
     Random random= new Random();
     TetrisPiece(String type){
+        generate(type);
+    }
+    public void generate(String type){
+        for(boolean[] bool: tetrisPieceSpace){
+            Arrays.fill(bool,false);
+        }
         switch(type){
             case ("Line"):{
                 for(int i=0; i< tetrisPieceSpace.length;i++){
