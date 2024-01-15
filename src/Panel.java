@@ -14,6 +14,7 @@ public class Panel extends JPanel implements KeyListener {
     int[][] gameInfo;
     TetrisPiece piece;
     Random random = new Random();
+    MoveDownController moveDownController;
     int count = 0;
     ArrayList<Integer> fullRows= new ArrayList<>();
     Color[] colors = {Color.red, Color.ORANGE, Color.yellow, Color.gray, Color.blue, Color.CYAN, Color.MAGENTA};
@@ -101,6 +102,7 @@ public class Panel extends JPanel implements KeyListener {
         if (keyCode == KeyEvent.VK_DOWN) {
             if (piece.noBottomBorderCollision() && checkDownMovement()) {
                 piece.moveDown();
+                repaint();
 
             } else {
                 placePiece();
@@ -129,8 +131,8 @@ public class Panel extends JPanel implements KeyListener {
         if(!fullRows.isEmpty()) {
             Thread.sleep(300);
             repaint();
-            for (int i = 0; i < fullRows.size(); i++) {
-                for (int j = fullRows.get(i); j > 0; j--) {
+            for (Integer fullRow : fullRows) {
+                for (int j = fullRow; j > 0; j--) {
                     gameInfo[j] = gameInfo[j - 1];
                 }
                 Arrays.fill(gameInfo[0], 0);

@@ -1,21 +1,21 @@
 public class MoveDownController extends Thread{
     long timeStart;
     long currentTime;
-    Panel panel;
-    MoveDownController(Panel panel){
-        this.panel=panel;
+    TetrisPiece piece;
+    MoveDownController(TetrisPiece piece){
+        this.piece=piece;
         timeStart=System.currentTimeMillis();
         this.start();
     }
-    public void run(){
+   /* public void run(){
         while (true){
             currentTime=System.currentTimeMillis();
             if(currentTime-timeStart>1000){
-                panel.piece.moveDown();
+                piece.moveDown();
                 timeStart=currentTime;
             }
         }
-    }
+    }*/
 }
 /*import java.util.concurrent.*;
 
