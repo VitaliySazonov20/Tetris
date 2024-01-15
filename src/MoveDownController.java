@@ -1,21 +1,28 @@
-import java.util.Date;
+import java.util.concurrent.*;
 
-public class MoveDownController extends Thread{
-    long timeStart;
-    long currentTime;
-    Panel panel;
-    MoveDownController(Panel panel){
-        this.panel=panel;
-        timeStart=System.currentTimeMillis();
-        this.start();
+public class MoveDownController {
+    private ScheduledExecutorService scheduler;
+    private Panel panel;
+    private boolean allowAutomaticMovement;
+
+    public MoveDownController(Panel panel) {
+        this.panel = panel;
+        allowAutomaticMovement = true;
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(this::scheduledMoveDown, 0, 1, TimeUnit.SECONDS);
     }
-    public void run(){
-        while (true){
-            currentTime=System.currentTimeMillis();
-            if(currentTime-timeStart>1000){
-                panel.moveDown();
-                timeStart=currentTime;
-            }
+
+    private void scheduledMoveDown() {
+        if (allowAutomaticMovement) {
+            panel.moveDown();
         }
+    }
+
+    public void stop() {
+        scheduler.shutdown();
+    }
+
+    public void setAllowAutomaticMovement(boolean allow) {
+        this.allowAutomaticMovement = allow;
     }
 }

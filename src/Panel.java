@@ -15,9 +15,9 @@ public class Panel extends JPanel implements KeyListener {
     boolean[][] gameInfo;
     boolean[][] ghostGameInfo;
     Random random = new Random();
-    int count=0;
+    int count = 0;
     TetrisPiece piece;
-
+    MoveDownController moveDownController;
     ArrayList<Integer> fullRows;
     String[] typesOfPieces = {"Line", "Square", "Sblock", "RSblock", "Tblock", "Lblock", "RLblock"};
 
@@ -82,29 +82,30 @@ public class Panel extends JPanel implements KeyListener {
     }
 
     private void spawnPiece() {
-        if(piece!=null){
+        if (piece != null) {
             piece.generate(typesOfPieces[random.nextInt(typesOfPieces.length)]);
-        }
-        else {
+        } else {
             piece = new TetrisPiece(typesOfPieces[random.nextInt(typesOfPieces.length)]);
         }
         int k = checkEmptyRows(piece.tetrisPieceSpace);
         boolean canSpawn = true;
+        outerLoop:
         for (int i = 0; i + k < piece.tetrisPieceSpace.length; i++) {
             for (int j = 0; j < piece.tetrisPieceSpace.length; j++) {
-                if (gameInfo[i][j + 3])
+                if (gameInfo[i][j + 3]) {
                     canSpawn = false;
+                    break outerLoop;
+                }
             }
         }
         if (canSpawn) {
             for (int i = 0; i + k < piece.tetrisPieceSpace.length; i++) {
-                for (int j = 0; j < piece.tetrisPieceSpace.length; j++) {
-                    ghostGameInfo[i][j + 3] = piece.tetrisPieceSpace[i + k][j];
-                }
+                System.arraycopy(piece.tetrisPieceSpace[i + k], 0, ghostGameInfo[i], 3, piece.tetrisPieceSpace.length);
             }
         }
 
     }
+
     private void rotateMatrix() {
         int indexI = ghostGameInfo.length;
         int indexJ = ghostGameInfo[0].length;
@@ -149,9 +150,7 @@ public class Panel extends JPanel implements KeyListener {
         while (!secondRowFilled) {
 
             for (int i = rotatableMatrix.length - 1; i >= 1; i--) {
-                for (int j = 0; j < rotatableMatrix[i].length; j++) {
-                    rotatableMatrix[i][j] = rotatableMatrix[i - 1][j];
-                }
+                System.arraycopy(rotatableMatrix[i - 1], 0, rotatableMatrix[i], 0, rotatableMatrix[i].length);
             }
             Arrays.fill(rotatableMatrix[0], false);
             for (int j = 0; j < rotatableMatrix[0].length; j++) {
@@ -177,8 +176,8 @@ public class Panel extends JPanel implements KeyListener {
         }
 
         while (secondCellFilled) {
-            for (int i = 0; i < rotatableMatrix.length; i++) {
-                if (rotatableMatrix[i][0]) {
+            for (boolean[] matrix : rotatableMatrix) {
+                if (matrix[0]) {
                     secondCellFilled = false;
                     break;
                 }
@@ -195,9 +194,7 @@ public class Panel extends JPanel implements KeyListener {
         }
         while (secondRowFilled) {
             for (int i = 0; i < rotatableMatrix.length - 1; i++) {
-                for (int j = 0; j < rotatableMatrix[i].length; j++) {
-                    rotatableMatrix[i][j] = rotatableMatrix[i + 1][j];
-                }
+                System.arraycopy(rotatableMatrix[i + 1], 0, rotatableMatrix[i], 0, rotatableMatrix[i].length);
             }
             Arrays.fill(rotatableMatrix[rotatableMatrix.length - 1], false);
             for (int j = 0; j < rotatableMatrix[0].length; j++) {
@@ -208,14 +205,14 @@ public class Panel extends JPanel implements KeyListener {
             }
         }
         int k = 0;
-        boolean succefullInsertion = false;
+        boolean successfulInsertion = false;
         boolean canRotate = true;
         for (int i = 0; i < rotatableMatrix.length; i++) {
             for (int j = 0; j < rotatableMatrix[i].length; j++) {
                 if (rotatableMatrix[i][j]) {
                     try {
 
-                        canRotate= !gameInfo[i + indexI][j + indexJ - k];
+                        canRotate = !gameInfo[i + indexI][j + indexJ - k];
 
                     } catch (ArrayIndexOutOfBoundsException e) {
                         k++;
@@ -223,8 +220,8 @@ public class Panel extends JPanel implements KeyListener {
                 }
             }
         }
-        if(canRotate) {
-            while (!succefullInsertion) {
+        if (canRotate) {
+            while (!successfulInsertion) {
                 outerLoop:
                 for (int i = 0; i < rotatableMatrix.length; i++) {
                     if (i + indexI < ghostGameInfo.length)
@@ -232,11 +229,11 @@ public class Panel extends JPanel implements KeyListener {
                     for (int j = 0; j < rotatableMatrix[i].length; j++) {
                         if (rotatableMatrix[i][j]) {
                             try {
-                                succefullInsertion = true;
+                                successfulInsertion = true;
                                 ghostGameInfo[i + indexI][j + indexJ - k] = rotatableMatrix[i][j];
                             } catch (ArrayIndexOutOfBoundsException e) {
                                 k++;
-                                succefullInsertion = false;
+                                successfulInsertion = false;
                                 break outerLoop;
                             }
                         }
@@ -250,9 +247,9 @@ public class Panel extends JPanel implements KeyListener {
 
     private int checkEmptyRows(boolean[][] matrix) {
         int k = 0;
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                if (matrix[i][j]) {
+        for (boolean[] booleans : matrix) {
+            for (boolean aBoolean : booleans) {
+                if (aBoolean) {
                     return k;
                 }
             }
@@ -302,71 +299,62 @@ public class Panel extends JPanel implements KeyListener {
     }
 
     private void clearFullRows(ArrayList<Integer> fullRows) {
-        for (Integer fullRow : fullRows) {
+        for (int fullRow : fullRows) {
             Arrays.fill(gameInfo[fullRow], false);
-        }
-        if (!fullRows.isEmpty()) {
-            try {
-                // Add a delay of 1000 milliseconds (1 second) before making the move
-                Thread.sleep(500);
-                repaint();
-            } catch (InterruptedException e) {
-                // Handle the interruption if needed
-                Thread.currentThread().interrupt();
-            }
         }
         for (int k : fullRows) {
             for (int i = k; i > 0; i--) {
                 gameInfo[i] = gameInfo[i - 1];
             }
-            Arrays.fill(gameInfo[0],false);
+            Arrays.fill(gameInfo[0], false);
         }
-        if (!fullRows.isEmpty()) {
-            try {
-                // Add a delay of 1000 milliseconds (1 second) before making the move
-                Thread.sleep(100);
-                repaint();
-            } catch (InterruptedException e) {
-                // Handle the interruption if needed
-                Thread.currentThread().interrupt();
-            }
+        try {
+            // Add a delay of 1000 milliseconds (1 second) before making the move
+            Thread.sleep(100);
+            repaint();
+        } catch (InterruptedException e) {
+            // Handle the interruption if needed
+            Thread.currentThread().interrupt();
         }
+
 
     }
 
 
     public void moveDown() {
         if (checkEmptyRow(ghostGameInfo.length - 1) && checkDownMovement()) {
-            for (int i = ghostGameInfo.length - 1; i >0; i--) {
-                for (int j = 0; j < ghostGameInfo[i].length; j++) {
-                    ghostGameInfo[i][j] = ghostGameInfo[i - 1][j];
-                }
+            for (int i = ghostGameInfo.length - 1; i > 0; i--) {
+                System.arraycopy(ghostGameInfo[i - 1], 0, ghostGameInfo[i], 0, ghostGameInfo[i].length);
             }
             Arrays.fill(ghostGameInfo[0], false);
 
         } else {
             count++;
-            for (int i = 0; i < gameInfo.length; i++) {
-                //possible find of duplicate bug
-                for (int j = 0; j < gameInfo[i].length; j++) {
+            moveDownController.setAllowAutomaticMovement(false);
+            for (int i = 0; i < ghostGameInfo.length; i++) {
+                for (int j = 0; j < ghostGameInfo[i].length; j++) {
                     if (ghostGameInfo[i][j]) {
-                        gameInfo[i][j] = ghostGameInfo[i][j];
+                        gameInfo[i][j] = true;
                     }
                 }
-
             }
-            for (int i = 0; i < ghostGameInfo.length; i++) {
-                Arrays.fill(ghostGameInfo[i], false);
+            for (boolean[] booleans : ghostGameInfo) {
+                Arrays.fill(booleans, false);
             }
-            //duplicate bug happens in one of these 3 methods.
             fullRows = checkFullRows();
-            clearFullRows(fullRows);
-            spawnPiece();
+
+            if (!fullRows.isEmpty()) {
+                clearFullRows(fullRows);
+            }
             System.out.println(count);
+            spawnPiece();
+            moveDownController.setAllowAutomaticMovement(true);
+
         }
         repaint();
-
-
+    }
+    public void setAutoDownController(MoveDownController moveDownController){
+        this.moveDownController=moveDownController;
     }
 
     private boolean checkDownMovement() {

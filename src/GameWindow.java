@@ -26,5 +26,6 @@ public class GameWindow {
         window.revalidate();
 
         moveDownController = new MoveDownController((Panel) gameScreen);
+        ((Panel) gameScreen).setAutoDownController(moveDownController);
     }
 }
