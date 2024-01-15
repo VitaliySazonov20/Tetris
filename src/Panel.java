@@ -14,7 +14,7 @@ public class Panel extends JPanel implements KeyListener {
     int[][] gameInfo;
     TetrisPiece piece;
     Random random = new Random();
-    MoveDownController moveDownController;
+    //MoveDownController moveDownController;
     int count = 0;
     ArrayList<Integer> fullRows= new ArrayList<>();
     Color[] colors = {Color.red, Color.ORANGE, Color.yellow, Color.gray, Color.blue, Color.CYAN, Color.MAGENTA};
@@ -133,7 +133,8 @@ public class Panel extends JPanel implements KeyListener {
             repaint();
             for (Integer fullRow : fullRows) {
                 for (int j = fullRow; j > 0; j--) {
-                    gameInfo[j] = gameInfo[j - 1];
+//                    gameInfo[j] = gameInfo[j - 1];
+                    System.arraycopy(gameInfo[j-1],0,gameInfo[j],0,gameInfo[j].length);
                 }
                 Arrays.fill(gameInfo[0], 0);
             }
