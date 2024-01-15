@@ -14,10 +14,6 @@ public class GameWindow {
         window.setLayout(null);
         window.setVisible(true);
 
-
-
-
-
         gameScreen= new Panel(WIDTH-175,HEIGHT-107);
         gameScreen.setBounds(25,25,WIDTH-175,HEIGHT-107);
         gameScreen.setBackground(Color.lightGray);
@@ -26,6 +22,6 @@ public class GameWindow {
         window.revalidate();
 
         moveDownController = new MoveDownController((Panel) gameScreen);
-        ((Panel) gameScreen).setAutoDownController(moveDownController);
+
     }
 }
