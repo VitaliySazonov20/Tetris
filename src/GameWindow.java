@@ -21,6 +21,7 @@ public class GameWindow {
         gameScreen.requestFocusInWindow();
         window.revalidate();
 
+        moveDownController = new MoveDownController((Panel) gameScreen);
 
     }
 }

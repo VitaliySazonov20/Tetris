@@ -1,4 +1,4 @@
-public class MoveDownController extends Thread{
+/*public class MoveDownController extends Thread{
     long timeStart;
     long currentTime;
     TetrisPiece piece;
@@ -7,7 +7,7 @@ public class MoveDownController extends Thread{
         timeStart=System.currentTimeMillis();
         this.start();
     }
-   /* public void run(){
+    public void run(){
         while (true){
             currentTime=System.currentTimeMillis();
             if(currentTime-timeStart>1000){
@@ -15,13 +15,13 @@ public class MoveDownController extends Thread{
                 timeStart=currentTime;
             }
         }
-    }*/
-}
-/*import java.util.concurrent.*;
+    }
+}*/
+import java.util.concurrent.*;
 
 public class MoveDownController {
-    private ScheduledExecutorService scheduler;
-    private Panel panel;
+    private final ScheduledExecutorService scheduler;
+    private final Panel panel;
 
     public MoveDownController(Panel panel) {
         this.panel = panel;
@@ -30,10 +30,22 @@ public class MoveDownController {
     }
 
     private void moveDown() {
-        panel.piece.moveDown();
+        if (panel.piece.noBottomBorderCollision() && panel.checkDownMovement()) {
+            panel.piece.moveDown();
+            }
+        else{
+            panel.placePiece();
+            try {
+                panel.removeFullRows();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            panel.spawnPiece();
+        }
+        panel.repaint();
     }
 
     public void stop() {
         scheduler.shutdown();
     }
-}*/
+}

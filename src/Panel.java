@@ -14,7 +14,6 @@ public class Panel extends JPanel implements KeyListener {
     int[][] gameInfo;
     TetrisPiece piece;
     Random random = new Random();
-    //MoveDownController moveDownController;
     int count = 0;
     ArrayList<Integer> fullRows= new ArrayList<>();
     Color[] colors = {Color.red, Color.ORANGE, Color.yellow, Color.gray, Color.blue, Color.CYAN, Color.MAGENTA};
@@ -25,6 +24,7 @@ public class Panel extends JPanel implements KeyListener {
         this.cellSize = (double) width / 10;
         this.gameInfo = new int[(int) (height / cellSize)][(int) (width / cellSize)];
         spawnPiece();
+        //moveDownController= new MoveDownController(piece);
         setFocusable(true);
         requestFocusInWindow();
         addKeyListener(this);
@@ -121,7 +121,7 @@ public class Panel extends JPanel implements KeyListener {
         repaint();
     }
 
-    private void removeFullRows() throws InterruptedException {
+    public void removeFullRows() throws InterruptedException {
         for(int i=0;i< gameInfo.length;i++){
             if(checkFullRow(gameInfo[i])){
                 Arrays.fill(gameInfo[i],0);
@@ -151,7 +151,7 @@ public class Panel extends JPanel implements KeyListener {
         }
         return true;
     }
-    private void placePiece() {
+    public void placePiece() {
         for (int i = 0; i < gameInfo.length; i++) {
             for (int j = 0; j < gameInfo[i].length; j++) {
                 if (piece.tetrisPieceSpace[i][j] > 0) {
@@ -161,7 +161,7 @@ public class Panel extends JPanel implements KeyListener {
         }
     }
 
-    private boolean checkDownMovement() {
+    public boolean checkDownMovement() {
         for (int i = 0; i < piece.tetrisPieceSpace.length; i++) {
             for (int j = 0; j < piece.tetrisPieceSpace[i].length; j++) {
                 if (piece.tetrisPieceSpace[i][j] > 0 && i + 1 < piece.tetrisPieceSpace.length) {
