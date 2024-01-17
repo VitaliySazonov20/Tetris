@@ -4,7 +4,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 
 public class Panel extends JPanel implements KeyListener {
 
@@ -13,18 +12,24 @@ public class Panel extends JPanel implements KeyListener {
     double cellSize;
     int[][] gameInfo;
     TetrisPiece piece;
-    Random random = new Random();
     int count = 0;
-    ArrayList<Integer> fullRows= new ArrayList<>();
+    JLabel score;
+    int difficulty = 1;
+    boolean placing = false;
+    boolean gameOver = false;
+    NextPiece nextPiece;
+    ArrayList<Integer> fullRows = new ArrayList<>();
     Color[] colors = {Color.red, Color.ORANGE, Color.yellow, Color.gray, Color.blue, Color.CYAN, Color.MAGENTA};
 
-    Panel(int width, int height) {
+    Panel(int width, int height, TetrisPiece piece,NextPiece nextPiece, JLabel score) {
+        this.nextPiece=nextPiece;
+        this.piece = piece;
         this.WIDTH = width;
         this.HEIGHT = height;
         this.cellSize = (double) width / 10;
         this.gameInfo = new int[(int) (height / cellSize)][(int) (width / cellSize)];
         spawnPiece();
-        //moveDownController= new MoveDownController(piece);
+        this.score = score;
         setFocusable(true);
         requestFocusInWindow();
         addKeyListener(this);
@@ -60,25 +65,44 @@ public class Panel extends JPanel implements KeyListener {
                 if (gameInfo[i][j] > 0) {
                     graphics.setColor(colors[gameInfo[i][j] - 1]);
                     graphics.fillRect((int) (j * cellSize + 5), (int) (i * cellSize + 5), (int) (cellSize - 10), (int) (cellSize - 10));
+                    graphics.setColor(Color.BLACK);
+                    graphics.drawRect((int) (j * cellSize + 4), (int) (i * cellSize + 4), (int) (cellSize - 9), (int) (cellSize - 9));
                 }
-                if (piece.tetrisPieceSpace[i][j] > 0) {
-                    graphics.setColor(colors[piece.tetrisPieceSpace[i][j] - 1]);
+                if (piece.ghostGameInfo[i][j] > 0) {
+                    graphics.setColor(colors[piece.ghostGameInfo[i][j] - 1]);
                     graphics.fillRect((int) (j * cellSize + 5), (int) (i * cellSize + 5), (int) (cellSize - 10), (int) (cellSize - 10));
+                    graphics.setColor(Color.BLACK);
+                    graphics.drawRect((int) (j * cellSize + 4), (int) (i * cellSize + 4), (int) (cellSize - 9), (int) (cellSize - 9));
                 }
             }
         }
     }
 
     public void spawnPiece() {
-        count++;
-        if (piece != null) {
-            piece.generate(random.nextInt(colors.length) + 1);
-        } else {
-            piece = new TetrisPiece(random.nextInt(colors.length) + 1, (int) (HEIGHT / cellSize), (int) (WIDTH / cellSize));
+
+        piece.generate();
+
+        if (cantSpawnPiece()) {
+            /*for (int i=0; i<piece.futurePiece.length;i++){
+                System.arraycopy(gameInfo[i],3,piece.futurePiece[i],0,piece.futurePiece[i].length);
+            }
+            nextPiece.repaint();*/
+            for (int[] row : piece.ghostGameInfo) {
+                Arrays.fill(row, 0);
+            }
         }
         repaint();
-        System.out.println(count);
 
+    }
+
+    public boolean cantSpawnPiece() {
+        for (int i = 0; i < piece.ghostGameInfo.length; i++) {
+            for (int j = 0; j < piece.ghostGameInfo[i].length; j++) {
+                if (piece.ghostGameInfo[i][j] > 0 && gameInfo[i][j] > 0)
+                    return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -89,82 +113,104 @@ public class Panel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_LEFT) {
-            if (checkLeftMovement()) {
-                piece.moveLeft();
-            }
-        }
-        if (keyCode == KeyEvent.VK_RIGHT) {
-            if(checkRightMovement()) {
-                piece.moveRight();
-            }
-        }
-        if (keyCode == KeyEvent.VK_DOWN) {
-            if (piece.noBottomBorderCollision() && checkDownMovement()) {
-                piece.moveDown();
-                repaint();
-
-            } else {
-                placePiece();
-                try {
-                    removeFullRows();
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
+        if (!gameOver) {
+            if (keyCode == KeyEvent.VK_LEFT) {
+                if (checkLeftMovement()) {
+                    piece.moveLeft();
                 }
-                spawnPiece();
-
             }
+            if (keyCode == KeyEvent.VK_RIGHT) {
+                if (checkRightMovement()) {
+                    piece.moveRight();
+                }
+            }
+            if (keyCode == KeyEvent.VK_DOWN) {
+                moveDown();
+            }
+            if (keyCode == KeyEvent.VK_UP) {
+                piece.rotate(gameInfo);
+            }
+            repaint();
         }
-        if(keyCode == KeyEvent.VK_UP){
-            piece.rotate(gameInfo);
+    }
+
+    public void moveDown() {
+        if (piece.noBottomBorderCollision() && checkDownMovement()) {
+            piece.moveDown();
+            repaint();
+
+        } else {
+            placePiece();
+            placing = true;
+            try {
+                removeFullRows();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            spawnPiece();
+
         }
+
+        if (cantSpawnPiece()) {
+            gameOver = true;
+        }
+        placing = false;
         repaint();
     }
 
     public void removeFullRows() throws InterruptedException {
-        for(int i=0;i< gameInfo.length;i++){
-            if(checkFullRow(gameInfo[i])){
-                Arrays.fill(gameInfo[i],0);
-                fullRows.add(i);
+        for (int i = 0; i < gameInfo.length; i++) {
+            if (checkFullRow(gameInfo[i])) {
+                if (!fullRows.contains(i)) {
+                    Arrays.fill(gameInfo[i], 0);
+                    fullRows.add(i);
+                }
             }
         }
-        if(!fullRows.isEmpty()) {
-            Thread.sleep(300);
+        System.out.println(fullRows);
+        if (!fullRows.isEmpty()) {
+            Thread.sleep(400);
             repaint();
             for (Integer fullRow : fullRows) {
                 for (int j = fullRow; j > 0; j--) {
-//                    gameInfo[j] = gameInfo[j - 1];
-                    System.arraycopy(gameInfo[j-1],0,gameInfo[j],0,gameInfo[j].length);
+                    System.arraycopy(gameInfo[j - 1], 0, gameInfo[j], 0, gameInfo[j].length);
                 }
                 Arrays.fill(gameInfo[0], 0);
             }
             Thread.sleep(300);
             repaint();
+            findDifficulty();
+            addScore(fullRows.size() * fullRows.size() * 100 * difficulty);
+            count += fullRows.size();
         }
+
         fullRows.clear();
     }
-    private boolean checkFullRow(int[] row){
-        for (int num: row){
-            if(num<=0){
+
+    private boolean checkFullRow(int[] row) {
+        for (int num : row) {
+            if (num <= 0) {
                 return false;
             }
         }
         return true;
     }
+
     public void placePiece() {
         for (int i = 0; i < gameInfo.length; i++) {
             for (int j = 0; j < gameInfo[i].length; j++) {
-                if (piece.tetrisPieceSpace[i][j] > 0) {
-                    gameInfo[i][j] = piece.tetrisPieceSpace[i][j];
+                if (piece.ghostGameInfo[i][j] > 0) {
+                    gameInfo[i][j] = piece.ghostGameInfo[i][j];
                 }
             }
         }
+        nextPiece.repaint();
     }
 
     public boolean checkDownMovement() {
-        for (int i = 0; i < piece.tetrisPieceSpace.length; i++) {
-            for (int j = 0; j < piece.tetrisPieceSpace[i].length; j++) {
-                if (piece.tetrisPieceSpace[i][j] > 0 && i + 1 < piece.tetrisPieceSpace.length) {
+        for (int i = 0; i < piece.ghostGameInfo.length; i++) {
+            for (int j = 0; j < piece.ghostGameInfo[i].length; j++) {
+                if (piece.ghostGameInfo[i][j] > 0 && i + 1 < piece.ghostGameInfo.length) {
                     if (gameInfo[i + 1][j] > 0) {
                         return false;
                     }
@@ -175,9 +221,9 @@ public class Panel extends JPanel implements KeyListener {
     }
 
     private boolean checkLeftMovement() {
-        for (int i = 0; i < piece.tetrisPieceSpace.length; i++) {
-            for (int j = 0; j < piece.tetrisPieceSpace[i].length; j++) {
-                if (piece.tetrisPieceSpace[i][j] > 0) {
+        for (int i = 0; i < piece.ghostGameInfo.length; i++) {
+            for (int j = 0; j < piece.ghostGameInfo[i].length; j++) {
+                if (piece.ghostGameInfo[i][j] > 0) {
                     if (j - 1 >= 0) {
                         if (gameInfo[i][j - 1] > 0) {
                             return false;
@@ -188,12 +234,13 @@ public class Panel extends JPanel implements KeyListener {
         }
         return true;
     }
+
     private boolean checkRightMovement() {
-        for (int i = 0; i < piece.tetrisPieceSpace.length; i++) {
-            for (int j = 0; j < piece.tetrisPieceSpace[i].length; j++) {
-                if (piece.tetrisPieceSpace[i][j]>0) {
-                    if (j + 1 < piece.tetrisPieceSpace[i].length) {
-                        if (gameInfo[i][j + 1]>0) {
+        for (int i = 0; i < piece.ghostGameInfo.length; i++) {
+            for (int j = 0; j < piece.ghostGameInfo[i].length; j++) {
+                if (piece.ghostGameInfo[i][j] > 0) {
+                    if (j + 1 < piece.ghostGameInfo[i].length) {
+                        if (gameInfo[i][j + 1] > 0) {
                             return false;
                         }
                     }
@@ -207,5 +254,22 @@ public class Panel extends JPanel implements KeyListener {
     public void keyReleased(KeyEvent e) {
 
     }
+
+    public void addScore(int points) {
+        StringBuilder sb = new StringBuilder(String.valueOf(Integer.parseInt(score.getText()) + points));
+        while(sb.length()<6)
+            sb.insert(0, "0");
+
+        score.setText(sb.toString());
+    }
+
+    private void findDifficulty() {
+        if (count < 300) {
+            this.difficulty = count / 10 + 1;
+        } else {
+            this.difficulty = 300;
+        }
+    }
+
 
 }

@@ -1,51 +1,41 @@
-/*public class MoveDownController extends Thread{
-    long timeStart;
-    long currentTime;
-    TetrisPiece piece;
-    MoveDownController(TetrisPiece piece){
-        this.piece=piece;
-        timeStart=System.currentTimeMillis();
-        this.start();
-    }
-    public void run(){
-        while (true){
-            currentTime=System.currentTimeMillis();
-            if(currentTime-timeStart>1000){
-                piece.moveDown();
-                timeStart=currentTime;
-            }
-        }
-    }
-}*/
-import java.util.concurrent.*;
-
-public class MoveDownController {
-    private final ScheduledExecutorService scheduler;
+public class MoveDownController implements Runnable {
+    int time = 1000;
     private final Panel panel;
+    private boolean running = true;
 
     public MoveDownController(Panel panel) {
         this.panel = panel;
-        scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(this::moveDown, 0, 1, TimeUnit.SECONDS);
+        start();
     }
 
-    private void moveDown() {
-        if (panel.piece.noBottomBorderCollision() && panel.checkDownMovement()) {
-            panel.piece.moveDown();
-            }
-        else{
-            panel.placePiece();
-            try {
-                panel.removeFullRows();
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-            panel.spawnPiece();
-        }
-        panel.repaint();
+    public void start() {
+        Thread thread = new Thread(this);
+        thread.start();
     }
 
     public void stop() {
-        scheduler.shutdown();
+        running = false;
     }
+
+    @Override
+    public void run() {
+        long lastTime = System.currentTimeMillis();
+        while (running) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastTime >= time) {
+                lastTime = currentTime;
+                if(!panel.placing) {
+                    panel.moveDown();
+                    if(panel.cantSpawnPiece()){
+                        stop();
+                    }
+                    recalculateTime();
+                }
+            }
+        }
+    }
+    private void recalculateTime(){
+        this.time= (int) (1000*Math.pow(0.85, panel.difficulty)+panel.difficulty);
+    }
+
 }
